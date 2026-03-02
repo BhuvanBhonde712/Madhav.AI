@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #FF7A00; border-radius: 4px; }
+}
+
+@layer components {
+  .glass-card {
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 1.25rem;
+  }
+  .golden-glow {
+    color: #FFD700;
+    text-shadow: 0 0 20px rgba(255,215,0,0.6), 0 0 40px rgba(255,215,0,0.3);
+  }
+  .mahabharata-bg {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Ccircle cx='30' cy='30' r='2' fill='%230F5C4D' fill-opacity='0.06'/%3E%3Ccircle cx='30' cy='30' r='10' stroke='%230F5C4D' stroke-opacity='0.04' stroke-width='1' fill='none'/%3E%3Ccircle cx='30' cy='30' r='20' stroke='%230F5C4D' stroke-opacity='0.03' stroke-width='1' fill='none'/%3E%3C/svg%3E");
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+@keyframes floatAlt {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(20px); }
+}
+@keyframes floatWord {
+  0% { transform: translateY(0px); opacity: 0.6; }
+  50% { transform: translateY(-15px); opacity: 0.8; }
+  100% { transform: translateY(0px); opacity: 0.6; }
+}
+@keyframes typewriterBlink {
+  0%, 50% { border-color: #FF7A00; }
+  51%, 100% { border-color: transparent; }
+}
+.chakra-spin { animation: spin 6s linear infinite; }
+.font-sanskrit { font-family: 'Noto Serif Devanagari', serif; }
