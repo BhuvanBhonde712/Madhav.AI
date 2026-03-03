@@ -3,6 +3,10 @@ import axios from 'axios'
 
 const AuthContext = createContext(null)
 
+// ✅ This fixes everything - points to Render backend
+const API_URL = import.meta.env.VITE_API_URL || 'https://madhav-ai-g4q8.onrender.com/api'
+axios.defaults.baseURL = API_URL
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -19,7 +23,7 @@ export function AuthProvider({ children }) {
 
   const fetchProfile = async () => {
     try {
-      const res = await axios.get('/api/auth/profile')
+      const res = await axios.get('/auth/profile')
       setUser(res.data.user)
     } catch {
       localStorage.removeItem('madhav_token')
@@ -31,7 +35,7 @@ export function AuthProvider({ children }) {
   }
 
   const login = async (email, password) => {
-    const res = await axios.post('/api/auth/login', { email, password })
+    const res = await axios.post('/auth/login', { email, password })
     const { token: newToken, user: newUser } = res.data
     localStorage.setItem('madhav_token', newToken)
     axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`
@@ -41,7 +45,7 @@ export function AuthProvider({ children }) {
   }
 
   const signup = async (name, email, password) => {
-    const res = await axios.post('/api/auth/signup', { name, email, password })
+    const res = await axios.post('/auth/signup', { name, email, password })
     const { token: newToken, user: newUser } = res.data
     localStorage.setItem('madhav_token', newToken)
     axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`
