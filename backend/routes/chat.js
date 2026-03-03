@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const Chat = require('../models/Chat')
 
-// GET all chats for a user
+// GET chats
 router.get('/', async (req, res) => {
   try {
     const chats = await Chat.find({ userId: req.query.userId })
@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
   }
 })
 
-// POST create new chat / add message
+// POST new chat
 router.post('/', async (req, res) => {
   try {
     const { userId, sessionId, messages } = req.body
@@ -24,4 +24,4 @@ router.post('/', async (req, res) => {
   }
 })
 
-module.exports = router
+module.exports = router   // ✅ Must export router, NOT a mongoose model
