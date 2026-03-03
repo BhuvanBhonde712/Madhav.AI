@@ -1,8 +1,34 @@
-const express = require('express')
-const router = express.Router()
+const jwt = require('jsonwebtoken')
+const User = require('../models/user')
 
-router.get('/', (req, res) => {
-  res.json({ message: 'Auth route working' })
-})
+const protect = async (req, res, next) => {
+  let token
+  if (req.headers.authorization?.startsWith('Bearer ')) {
+    token = req.headers.authorization.split(' ')[1]
+  }
+  if (!token) return res.status(401).json({ message: 'Authentication required' })
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    req.user = await User.findById(decoded.id)
+    if (!req.user) return res.status(401).json({ message: 'User not found' })
+    next()
+  } catch {
+    return res.status(401).json({ message: 'Invalid or expired token' })
+  }
+}
 
-module.exports = router
+const optionalAuth = async (req, res, next) => {
+  let token
+  if (req.headers.authorization?.startsWith('Bearer ')) {
+    token = req.headers.authorization.split(' ')[1]
+  }
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET)
+      req.user = await User.findById(decoded.id)
+    } catch {}
+  }
+  next()
+}
+
+module.exports = { protect, optionalAuth }
