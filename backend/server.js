@@ -23,8 +23,8 @@ const limiter = rateLimit({
 })
 app.use('/api', limiter)
 
-app.use('/api/auth', require('./routes/auth'))
-app.use('/api/chat', require('./routes/chat'))
+app.use('/api/auth', require('./middleware/auth'))
+app.use('/api/chat', require('./models/chat'))
 
 app.get('/api/health', (_, res) => res.json({ status: 'ok', app: 'Madhav.ai' }))
 
@@ -37,4 +37,5 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000
 app.listen(PORT, () => {
   console.log(`🕉️  Madhav.ai server running on port ${PORT}`)
+
 })
