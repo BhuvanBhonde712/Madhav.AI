@@ -1,5 +1,5 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai')
-const Chat = require('../models/Chat')
+const Chat = require('../models/chat')
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
@@ -105,4 +105,5 @@ exports.clearHistory = async (req, res) => {
     console.error('Clear error:', err)
     res.status(500).json({ message: 'Server error' })
   }
+
 }
