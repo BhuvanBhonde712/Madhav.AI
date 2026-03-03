@@ -1,40 +1,26 @@
 const API_URL = import.meta.env.VITE_API_URL || 'https://madhav-ai-g4q8.onrender.com/api'
 
-export const sendMessage = async (message, token) => {
-  const sessionId = 'session_' + (token || 'guest')  // ✅ always a string
-
+export const sendMessage = async (message, history, sessionId) => {
   const res = await fetch(`${API_URL}/chat`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       message,
-      sessionId,   // ✅ string
-      userId: null
+      sessionId: sessionId || 'guest_session',
+      history,
     }),
   })
   return res.json()
 }
 
-export const fetchHistory = async (token) => {
-  const sessionId = 'session_' + (token || 'guest')
-  const res = await fetch(`${API_URL}/chat?sessionId=${sessionId}`, {
-    headers: {
-      ...(token && { Authorization: `Bearer ${token}` }),
-    },
-  })
+export const fetchHistory = async (sessionId) => {
+  const res = await fetch(`${API_URL}/chat?sessionId=${sessionId || ''}`)
   return res.json()
 }
 
-export const clearHistory = async (token) => {
-  const sessionId = 'session_' + (token || 'guest')
-  const res = await fetch(`${API_URL}/chat/${sessionId}`, {
+export const clearHistory = async (sessionId) => {
+  const res = await fetch(`${API_URL}/chat/${sessionId || ''}`, {
     method: 'DELETE',
-    headers: {
-      ...(token && { Authorization: `Bearer ${token}` }),
-    },
   })
   return res.json()
 }
