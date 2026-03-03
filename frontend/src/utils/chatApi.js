@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL
+const API_URL = 'https://madhav-ai-g4q8.onrender.com/api'
 
 export const sendMessage = async (message, sessionId, token) => {
   const res = await fetch(`${API_URL}/chat`, {
