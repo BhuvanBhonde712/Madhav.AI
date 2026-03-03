@@ -5,20 +5,26 @@ const { GoogleGenerativeAI } = require('@google/generative-ai')
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
-// POST - send message and get Gemini response
 router.post('/', async (req, res) => {
   try {
-    const { userId, sessionId, message } = req.body
+    const { message, sessionId, history = [] } = req.body
 
-    // Call Gemini API
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
-    const result = await model.generateContent(message)
+
+    // Build context from history
+    const context = history.map(m => `${m.role === 'user' ? 'User' : 'Madhav'}: ${m.content}`).join('\n')
+    const prompt = `You are Madhav, a wise spiritual guide inspired by the Bhagavad Gita. Speak with wisdom, compassion and clarity.
+${context ? `\nConversation so far:\n${context}` : ''}
+User: ${message}
+Madhav:`
+
+    const result = await model.generateContent(prompt)
     const reply = result.response.text()
 
     // Save to MongoDB
-    let chat = await Chat.findOne({ sessionId })
+    let chat = await Chat.findOne({ sessionId: String(sessionId) })
     if (!chat) {
-      chat = new Chat({ userId, sessionId, messages: [] })
+      chat = new Chat({ sessionId: String(sessionId), messages: [] })
     }
     chat.messages.push({ role: 'user', content: message })
     chat.messages.push({ role: 'assistant', content: reply })
@@ -26,15 +32,14 @@ router.post('/', async (req, res) => {
 
     res.json({ reply })
   } catch (err) {
-    console.error('Chat error:', err)
-    res.status(500).json({ message: 'Server error' })
+    console.error('Chat error:', err.message)
+    res.status(500).json({ message: err.message })
   }
 })
 
-// GET - fetch chat history
 router.get('/', async (req, res) => {
   try {
-    const chat = await Chat.findOne({ sessionId: req.query.sessionId })
+    const chat = await Chat.findOne({ sessionId: String(req.query.sessionId) })
     res.json(chat ? chat.messages : [])
   } catch (err) {
     res.status(500).json({ message: 'Server error' })
