@@ -1,15 +1,27 @@
-const mongoose = require('mongoose')
+const express = require('express')
+const router = express.Router()
+const Chat = require('../models/Chat')
 
-const messageSchema = new mongoose.Schema({
-  role: { type: String, enum: ['user','assistant'], required: true },
-  content: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now },
+// GET all chats for a user
+router.get('/', async (req, res) => {
+  try {
+    const chats = await Chat.find({ userId: req.query.userId })
+    res.json(chats)
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' })
+  }
 })
 
-const chatSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true, sparse: true },
-  sessionId: { type: String, index: true, sparse: true },
-  messages: [messageSchema],
-}, { timestamps: true })
+// POST create new chat / add message
+router.post('/', async (req, res) => {
+  try {
+    const { userId, sessionId, messages } = req.body
+    const chat = new Chat({ userId, sessionId, messages })
+    await chat.save()
+    res.status(201).json(chat)
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' })
+  }
+})
 
-module.exports = mongoose.model('Chat', chatSchema)
+module.exports = router
