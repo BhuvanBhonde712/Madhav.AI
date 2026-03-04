@@ -1,39 +1,60 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider, useAuth } from './context/AuthContext'
-import LoginPage from './pages/loginpage'
-import ChatPage from './pages/chatpage'
+import ChakraLoader from './components/ChakraLoader';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { SidebarProvider } from './context/SidebarContext';
+import Sidebar from './components/Sidebar';
 
-function ProtectedRoute({ children }) {
-  const { user, loading } = useAuth()
+import LoginPage        from './pages/LoginPage';
+import ChatPage         from './pages/ChatPage';
+import QuizPage         from './pages/QuizPage';
+import DailyVersePage   from './pages/DailyVersePage';
+import VoiceChatPage    from './pages/VoiceChatPage';
+import KarmaCalculatorPage from './pages/KarmaCalculatorPage';
+import StoryModePage    from './pages/StoryModePage';
+
+function PrivateRoute({ children }) {
+  const { user, loading } = useAuth();
   if (loading) return (
-    <div className="fixed inset-0 bg-[#0D0D0D] flex items-center justify-center">
-      <div className="text-golden font-sanskrit text-2xl animate-pulse">॥ Madhav.ai ॥</div>
-    </div>
-  )
-  if (!user) return <Navigate to="/" replace />
-  return children
+  <div className="h-screen w-screen bg-[#0D0D0D] flex items-center justify-center">
+    <ChakraLoader size="xl" text="Loading Madhav…" />
+  </div>
+);
+  return user ? children : <Navigate to="/login" replace />;
 }
 
-function AppRoutes() {
-  return (
-    <Routes>
-      <Route path="/" element={<LoginPage />} />
-      <Route path="/chat" element={
-        <ProtectedRoute>
-          <ChatPage />
-        </ProtectedRoute>
-      } />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  )
+/* Keyboard shortcuts — must be inside BrowserRouter */
+function KeyboardNav() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const map = { c: '/', q: '/quiz', d: '/daily-verse', v: '/voice', k: '/karma', s: '/story' };
+    const handler = (e) => {
+      if (e.altKey && map[e.key]) { e.preventDefault(); navigate(map[e.key]); }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [navigate]);
+  return null;
 }
 
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
+      <SidebarProvider>
+        <BrowserRouter>
+          <KeyboardNav />
+          <Sidebar />
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/" element={<PrivateRoute><ChatPage /></PrivateRoute>} />
+            <Route path="/quiz" element={<PrivateRoute><QuizPage /></PrivateRoute>} />
+            <Route path="/daily-verse" element={<PrivateRoute><DailyVersePage /></PrivateRoute>} />
+            <Route path="/voice" element={<PrivateRoute><VoiceChatPage /></PrivateRoute>} />
+            <Route path="/karma" element={<PrivateRoute><KarmaCalculatorPage /></PrivateRoute>} />
+            <Route path="/story" element={<PrivateRoute><StoryModePage /></PrivateRoute>} />
+          </Routes>
+        </BrowserRouter>
+      </SidebarProvider>
     </AuthProvider>
-  )
+  );
 }
