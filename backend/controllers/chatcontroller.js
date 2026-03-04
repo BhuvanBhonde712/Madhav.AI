@@ -105,5 +105,30 @@ exports.clearHistory = async (req, res) => {
     console.error('Clear error:', err)
     res.status(500).json({ message: 'Server error' })
   }
-
 }
+const getChatHistory = async (req, res) => {
+  try {
+    const chat = await Chat.findOne({ userId: req.user._id })
+      .select('messages updatedAt');
+
+    if (!chat) return res.json([]);
+
+    const history = [];
+    const msgs = chat.messages || [];
+    for (let i = 0; i < msgs.length; i++) {
+      if (msgs[i].role === 'user') {
+        history.push({
+          preview: (msgs[i].content || 'Conversation').slice(0, 55) + '…',
+          date: chat.updatedAt,
+        });
+        if (history.length >= 8) break;
+      }
+    }
+
+    res.json(history);
+  } catch {
+    res.json([]);
+  }
+};
+
+exports.getChatHistory = getChatHistory;
