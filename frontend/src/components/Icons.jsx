@@ -1,69 +1,188 @@
-export function SudarshanaChakra({ size = 40, className = '' }) {
+// All SVG icons — no emojis anywhere
+
+export function OmIcon({ className = '' }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100" className={`chakra-spin ${className}`}>
-      <circle cx="50" cy="50" r="46" fill="none" stroke="#FFD700" strokeWidth="2" strokeDasharray="8 4" />
-      {[...Array(16)].map((_, i) => {
-        const angle = (i * 360) / 16
-        const rad = (angle * Math.PI) / 180
-        const x1 = 50 + 20 * Math.cos(rad)
-        const y1 = 50 + 20 * Math.sin(rad)
-        const x2 = 50 + 44 * Math.cos(rad)
-        const y2 = 50 + 44 * Math.sin(rad)
-        return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#FFD700" strokeWidth="1.5" />
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13v2.5c-2.21.45-3.5 2.08-3.5 3.5 0 1.93 1.57 3.5 3.5 3.5s3.5-1.57 3.5-3.5h-2c0 .83-.67 1.5-1.5 1.5S9.5 13.83 9.5 13c0-.83.67-1.5 1.5-1.5V14l3-2.5L11 9v-2h-1v1z"/>
+    </svg>
+  );
+}
+
+export function BowArrow({ className = '' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="19" x2="12" y2="5" />
+      <polyline points="6 11 12 5 18 11" />
+      <line x1="9" y1="19" x2="15" y2="19" />
+    </svg>
+  );
+}
+
+export function Feather({ className = '' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z" />
+      <line x1="16" y1="8" x2="2" y2="22" />
+      <line x1="17" y1="15" x2="9" y2="15" />
+    </svg>
+  );
+}
+
+export function Chakra({ className = '' }) {
+  return (
+    <svg className={className} viewBox="0 0 100 100" fill="none">
+      {/* Outer rim */}
+      <circle cx="50" cy="50" r="46" stroke="currentColor" strokeWidth="3.5" />
+      {/* Inner hub */}
+      <circle cx="50" cy="50" r="10" stroke="currentColor" strokeWidth="3" />
+      {/* Center dot */}
+      <circle cx="50" cy="50" r="3" fill="currentColor" />
+      {/* 16 spokes */}
+      {Array.from({ length: 16 }).map((_, i) => {
+        const angle = (i * 360) / 16;
+        const rad = (angle * Math.PI) / 180;
+        const x1 = 50 + 11 * Math.cos(rad);
+        const y1 = 50 + 11 * Math.sin(rad);
+        const x2 = 50 + 44 * Math.cos(rad);
+        const y2 = 50 + 44 * Math.sin(rad);
+        return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="currentColor" strokeWidth="2" strokeLinecap="round" />;
       })}
-      {[...Array(8)].map((_, i) => {
-        const angle = (i * 360) / 8 + 22.5
-        const rad = (angle * Math.PI) / 180
-        const x = 50 + 36 * Math.cos(rad)
-        const y = 50 + 36 * Math.sin(rad)
-        return <circle key={i} cx={x} cy={y} r="3" fill="#FF7A00" opacity="0.8" />
+      {/* 16 flame tips on outer rim */}
+      {Array.from({ length: 16 }).map((_, i) => {
+        const angle = (i * 360) / 16 + 11.25;
+        const rad = (angle * Math.PI) / 180;
+        const x1 = 50 + 44 * Math.cos(rad);
+        const y1 = 50 + 44 * Math.sin(rad);
+        const x2 = 50 + 48 * Math.cos(rad);
+        const y2 = 50 + 48 * Math.sin(rad);
+        return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />;
       })}
-      <circle cx="50" cy="50" r="18" fill="none" stroke="#FF7A00" strokeWidth="2" />
-      <circle cx="50" cy="50" r="6" fill="#FFD700" />
     </svg>
-  )
+  );
 }
 
-export function PeacockFeather({ size = 36, className = '' }) {
+export function ChatIcon({ className = '' }) {
   return (
-    <svg width={size} height={size * 2.5} viewBox="0 0 60 150" className={className} fill="none">
-      <path d="M30 150 Q28 100 30 60" stroke="#0F5C4D" strokeWidth="2" strokeLinecap="round" />
-      <ellipse cx="30" cy="45" rx="18" ry="35" fill="#0F5C4D" opacity="0.15" />
-      {[-14,-10,-6,-2,2,6,10,14].map((x, i) => (
-        <path key={i} d={`M30 60 Q${30+x} ${50-Math.abs(x)} ${30+x*1.2} ${35-i}`}
-          stroke="#0F5C4D" strokeWidth="0.8" opacity="0.4" strokeLinecap="round" />
-      ))}
-      <ellipse cx="30" cy="30" rx="8" ry="12" fill="#1A7A68" opacity="0.7" />
-      <ellipse cx="30" cy="30" rx="5" ry="8" fill="#FFD700" opacity="0.8" />
-      <ellipse cx="30" cy="30" rx="3" ry="5" fill="#0D0D0D" opacity="0.9" />
-      <circle cx="31" cy="28" r="1" fill="white" opacity="0.7" />
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
     </svg>
-  )
+  );
 }
 
-export function BowArrow({ size = 60, className = '' }) {
+export function QuizIcon({ className = '' }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100" className={className} fill="none" opacity="0.2">
-      <path d="M20 10 Q5 50 20 90" stroke="#0F5C4D" strokeWidth="3" strokeLinecap="round" />
-      <line x1="20" y1="10" x2="20" y2="90" stroke="#FFD700" strokeWidth="1" strokeDasharray="4 2" />
-      <line x1="20" y1="50" x2="90" y2="50" stroke="#FF7A00" strokeWidth="2" strokeLinecap="round" />
-      <polygon points="90,50 80,44 80,56" fill="#FF7A00" />
-      <path d="M20,50 L14,44 L20,50 L14,56" stroke="#0F5C4D" strokeWidth="1.5" fill="none" />
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
     </svg>
-  )
+  );
 }
 
-export function Flute({ size = 28, className = '' }) {
+export function VerseIcon({ className = '' }) {
   return (
-    <svg width={size * 3} height={size} viewBox="0 0 120 40" className={className} fill="none">
-      <rect x="5" y="17" width="110" height="6" rx="3" fill="#0F5C4D" opacity="0.7" />
-      <ellipse cx="8" cy="20" rx="5" ry="4" fill="#1A7A68" opacity="0.9" />
-      {[25,38,51,64,77,90].map((x, i) => (
-        <circle key={i} cx={x} cy="20" r="3" fill="#0D0D0D" opacity="0.5" />
-      ))}
-      <ellipse cx="115" cy="20" rx="4" ry="3" fill="#FFD700" opacity="0.6" />
-      <text x="30" y="12" fontSize="8" fill="#FF7A00" opacity="0.4">♪</text>
-      <text x="70" y="10" fontSize="6" fill="#FF7A00" opacity="0.3">♫</text>
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
     </svg>
-  )
+  );
+}
+
+export function VoiceIcon({ className = '' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+      <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+      <line x1="12" y1="19" x2="12" y2="23" />
+      <line x1="8" y1="23" x2="16" y2="23" />
+    </svg>
+  );
+}
+
+export function KarmaIcon({ className = '' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="2" x2="12" y2="6" />
+      <line x1="12" y1="18" x2="12" y2="22" />
+      <path d="M5 12H2" /><path d="M22 12h-3" />
+      <path d="M16 7l-4 5-4-5" />
+      <path d="M8 17l4-5 4 5" />
+      <line x1="3" y1="6" x2="6" y2="9" />
+      <line x1="18" y1="15" x2="21" y2="18" />
+    </svg>
+  );
+}
+
+export function StoryIcon({ className = '' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+      <line x1="9" y1="7" x2="15" y2="7" />
+      <line x1="9" y1="11" x2="15" y2="11" />
+    </svg>
+  );
+}
+
+export function MenuIcon({ className = '' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <path d="M3 5h12M3 9h12M3 13h8" />
+    </svg>
+  );
+}
+
+export function LogoutIcon({ className = '' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" y1="12" x2="9" y2="12" />
+    </svg>
+  );
+}
+
+export function EditIcon({ className = '' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  );
+}
+
+export function MicIcon({ className = '' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+      <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+      <line x1="12" y1="19" x2="12" y2="23" />
+      <line x1="8" y1="23" x2="16" y2="23" />
+    </svg>
+  );
+}
+
+export function StopIcon({ className = '' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <rect x="6" y="6" width="12" height="12" rx="2" />
+    </svg>
+  );
+}
+
+export function ArrowIcon({ className = '' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <polyline points="12 5 19 12 12 19" />
+    </svg>
+  );
+}
+
+export function CheckIcon({ className = '' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
 }
