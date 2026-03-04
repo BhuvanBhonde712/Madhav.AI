@@ -1,99 +1,125 @@
-import { motion } from 'framer-motion'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, memo } from 'react';
+import { Feather } from './Icons';/* ── Tokenize: split text preserving newlines ── */
+function tokenize(text) {
+  const tokens = [];
+  text.split(/(\n)/).forEach((seg) => {
+    if (seg === '\n') {
+      tokens.push({ type: 'br' });
+    } else {
+      seg.split(' ').forEach((word, i) => {
+        if (word) tokens.push({ type: 'word', content: word, addSpace: true });
+      });
+    }
+  });
+  return tokens;
+}
 
-// Peacock feather typewriter for bot messages
-function PeacockTypewriter({ text }) {
-  const [displayed, setDisplayed] = useState('')
-  const [done, setDone] = useState(false)
+/* ── Inline markdown: **bold**, *italic* ── */
+function renderInline(text) {
+  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
+  return parts.map((p, i) => {
+    if (p.startsWith('**') && p.endsWith('**'))
+      return <strong key={i} className="text-[#FFD700]/90 font-semibold">{p.slice(2, -2)}</strong>;
+    if (p.startsWith('*') && p.endsWith('*'))
+      return <em key={i}>{p.slice(1, -1)}</em>;
+    return p;
+  });
+}
+
+/* ── Formatted final text ── */
+function FormattedText({ text }) {
+  const paragraphs = text.split(/\n\n+/);
+  return (
+    <div className="space-y-2">
+      {paragraphs.map((para, pi) => (
+        <p key={pi} className="leading-relaxed">
+          {para.split('\n').map((line, li) => (
+            <span key={li}>
+              {li > 0 && <br />}
+              {renderInline(line)}
+            </span>
+          ))}
+        </p>
+      ))}
+    </div>
+  );
+}
+
+/* ── Streaming text: word-by-word with fade-in ── */
+function StreamingText({ text, onDone }) {
+  const [displayed, setDisplayed] = useState([]);
+  const [done, setDone] = useState(false);
+  const counterRef = useRef(0);
+  const timerRef = useRef(null);
 
   useEffect(() => {
-    setDisplayed('')
-    setDone(false)
-    let i = 0
-    const interval = setInterval(() => {
-      if (i < text.length) {
-        setDisplayed(text.slice(0, i + 1))
-        i++
-      } else {
-        setDone(true)
-        clearInterval(interval)
+    setDisplayed([]);
+    setDone(false);
+    counterRef.current = 0;
+    const tokens = tokenize(text);
+
+    const addNext = () => {
+      const i = counterRef.current;
+      if (i >= tokens.length) {
+        setDone(true);
+        onDone?.();
+        return;
       }
-    }, 18)
-    return () => clearInterval(interval)
-  }, [text])
+      setDisplayed((prev) => [...prev, { ...tokens[i], key: i }]);
+      counterRef.current++;
+      timerRef.current = setTimeout(addNext, 16);
+    };
+
+    timerRef.current = setTimeout(addNext, 60);
+    return () => clearTimeout(timerRef.current);
+  }, [text]);
+
+  if (done) return <FormattedText text={text} />;
 
   return (
-    <span className="relative">
-      {displayed}
-      {/* Peacock feather cursor */}
-      {!done && (
-        <span
-          className="inline-block ml-0.5 align-middle"
-          style={{
-            width: '10px',
-            height: '18px',
-            background: 'linear-gradient(180deg, #FFD700 0%, #0F5C4D 60%, #1A7A68 100%)',
-            borderRadius: '50% 50% 30% 30%',
-            display: 'inline-block',
-            animation: 'float 0.6s ease-in-out infinite',
-            opacity: 0.85,
-            boxShadow: '0 0 6px rgba(255,215,0,0.6)',
-            transform: 'rotate(10deg)',
-          }}
-        />
+    <span className="leading-relaxed">
+      {displayed.map((t) =>
+        t.type === 'br'
+          ? <br key={t.key} />
+          : <span key={t.key} className="word-stream">{t.content} </span>
       )}
+      <span className="inline-block w-[2px] h-[13px] bg-[#0F5C4D] ml-0.5 animate-pulse align-middle" />
     </span>
-  )
+  );
 }
 
-export default function ChatBubble({ message, role }) {
-  const isUser = role === 'user'
+/* ── Main ChatBubble ── */
+const ChatBubble = memo(function ChatBubble({ message, isBot, stream = false }) {
+  const [streamDone, setStreamDone] = useState(false);
+
+  useEffect(() => {
+    if (!stream) setStreamDone(true);
+    else setStreamDone(false);
+  }, [stream, message]);
+
+  if (!isBot) {
+    return (
+      <div className="flex justify-end px-4">
+        <div className="max-w-[75%] px-4 py-3 rounded-2xl rounded-tr-sm bg-[#FF7A00] text-[#1a1a1a] text-sm leading-relaxed font-medium shadow-lg shadow-[#FF7A00]/10">
+          {message}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 14, scale: 0.97 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
-      className={`flex ${isUser ? 'justify-end' : 'justify-start'} px-2`}
-    >
-      {/* Bot avatar */}
-      {!isUser && (
-        <div className="mr-2 mt-1 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
-          style={{ background: 'linear-gradient(135deg, #0F5C4D, #1A7A68)', boxShadow: '0 2px 12px rgba(15,92,77,0.4)' }}>
-          <span className="font-sanskrit text-yellow-400 text-xs">म</span>
-        </div>
-      )}
-
-      {/* Bubble */}
-      <div
-        className="max-w-[78%] md:max-w-[68%] rounded-2xl px-4 py-3"
-        style={isUser
-          ? {
-              background: 'linear-gradient(135deg, #FF7A00, #FF9A33)',
-              color: '#000000',
-              borderBottomRightRadius: '6px',
-              boxShadow: '0 2px 20px rgba(0, 0, 0, 0.35)',
-            }
-          : {
-              background: 'linear-gradient(135deg, #0F5C4D, #1A7A68)',
-              color: '#fff',
-              borderBottomLeftRadius: '6px',
-              boxShadow: '0 2px 20px rgba(15,92,77,0.35)',
-            }
-        }
-      >
-        <p className="font-sans text-sm leading-relaxed whitespace-pre-wrap">
-          {isUser ? message : <PeacockTypewriter text={message} />}
-        </p>
+    <div className="flex gap-3 px-4">
+      <div className="w-8 h-8 rounded-full bg-[#0F5C4D]/15 border border-[#0F5C4D]/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+        <Feather className="w-4 h-4 text-[#0F5C4D]" />
       </div>
+      <div className="max-w-[78%] px-4 py-3 rounded-2xl rounded-tl-sm bg-[#0F5C4D]/10 border border-[#0F5C4D]/15 text-[#ddd] text-sm shadow-sm">
+        {stream && !streamDone
+          ? <StreamingText text={message} onDone={() => setStreamDone(true)} />
+          : <FormattedText text={message} />
+        }
+      </div>
+    </div>
+  );
+});
 
-      {/* User avatar */}
-      {isUser && (
-        <div className="ml-2 mt-1 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium text-white"
-          style={{ background: 'rgba(255,122,0,0.4)', border: '1px solid rgba(255,122,0,0.6)' }}>
-          P
-        </div>
-      )}
-    </motion.div>
-  )
-}
+export default ChatBubble;
