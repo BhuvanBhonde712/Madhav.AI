@@ -46,3 +46,44 @@
 }
 .chakra-spin { animation: spin 6s linear infinite; }
 .font-sanskrit { font-family: 'Noto Serif Devanagari', serif; }
+/* ── GPU-accelerated word stream animation (Claude-like) ── */
+@keyframes wordStreamIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 5px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+.word-stream {
+  display: inline;
+  animation: wordStreamIn 0.14s cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+/* ── Page enter animation ── */
+@keyframes pageEnter {
+  from { opacity: 0; transform: translate3d(0, 12px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+.page-enter {
+  animation: pageEnter 0.35s cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+/* ── Shortcut card hover glow ── */
+.shortcut-card {
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1),
+              border-color 0.2s ease,
+              background-color 0.2s ease;
+  will-change: transform;
+}
+.shortcut-card:hover {
+  transform: translate3d(0, -2px, 0);
+}
+
+/* ── Smooth scrollbar ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #1e1e1e; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #2a2a2a; }
