@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { sendMessage, getHistory, clearHistory, getChatHistory } = require('../controllers/chatController');
+const { sendMessage, getHistory, clearHistory, getChatHistory } = require('../controllers/chatcontroller');
 const { protect } = require('../middleware/auth');
 
 router.post('/send', protect, sendMessage);
