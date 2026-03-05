@@ -4,7 +4,7 @@ import { useSidebar } from '../context/SidebarContext';
 import { useVoice, stopSpeaking } from '../hooks/usevoice';
 import { sendMessage } from '../utils/chatApi';
 
-const ELEVENLABS_VOICE_ID = 'TxGEqnHWrfWFTfGW9XjX'; // Josh — deep calm male voice
+const ELEVENLABS_VOICE_ID = 'ErXwobaYiN019PkySvjV'; // Josh — deep calm male voice
 const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY;
 
 // Unlock audio context on first user tap (fixes mobile autoplay block)
@@ -259,5 +259,6 @@ export default function VoiceChatPage() {
     </div>
   );
 }
+
 
 
