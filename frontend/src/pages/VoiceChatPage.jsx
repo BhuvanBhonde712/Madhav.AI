@@ -1,8 +1,59 @@
 import ChakraLoader from '../components/ChakraLoader';
 import { useState, useEffect, useRef } from 'react';
 import { useSidebar } from '../context/SidebarContext';
-import { useVoice, speak, stopSpeaking } from '../hooks/usevoice';
+import { useVoice, stopSpeaking } from '../hooks/usevoice';
 import { sendMessage } from '../utils/chatApi';
+
+// ElevenLabs voice IDs — deep, calm, divine sounding
+// "Adam" — deep authoritative male voice
+const ELEVENLABS_VOICE_ID = 'pNInz6obpgDQGcFmaJgB';
+const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY;
+
+async function speakWithElevenLabs(text, onEnd) {
+  try {
+    const response = await fetch(
+      `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}`,
+      {
+        method: 'POST',
+        headers: {
+          'xi-api-key': ELEVENLABS_API_KEY,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text,
+          model_id: 'eleven_monolingual_v1',
+          voice_settings: {
+            stability: 0.75,        // calm, steady voice
+            similarity_boost: 0.85, // clear and consistent
+            style: 0.3,             // slight expressiveness
+            use_speaker_boost: true,
+          },
+        }),
+      }
+    );
+
+    if (!response.ok) throw new Error('ElevenLabs API error');
+
+    const audioBlob = await response.blob();
+    const audioUrl = URL.createObjectURL(audioBlob);
+    const audio = new Audio(audioUrl);
+    audio.onended = () => {
+      URL.revokeObjectURL(audioUrl);
+      onEnd && onEnd();
+    };
+    audio.play();
+    return audio; // return so we can stop it later
+  } catch (err) {
+    console.error('ElevenLabs error:', err);
+    // Fallback to browser voice if ElevenLabs fails
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.85;
+    utterance.pitch = 0.9;
+    utterance.onend = onEnd;
+    window.speechSynthesis.speak(utterance);
+    return null;
+  }
+}
 
 export default function VoiceChatPage() {
   const { setIsOpen } = useSidebar();
@@ -10,6 +61,7 @@ export default function VoiceChatPage() {
   const [loading, setLoading] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [autoSpeak, setAutoSpeak] = useState(true);
+  const currentAudioRef = useRef(null);
   const messagesEndRef = useRef(null);
 
   const { isListening, transcript, supported, startListening, stopListening } = useVoice({
@@ -32,16 +84,23 @@ export default function VoiceChatPage() {
     setLoading(true);
 
     try {
-      const history = messages.map((m) => ({ role: m.role === 'bot' ? 'model' : 'user', content: m.content }));
+      const history = messages.map((m) => ({
+        role: m.role === 'bot' ? 'model' : 'user',
+        content: m.content,
+      }));
       const reply = await sendMessage(text, history);
       setMessages((prev) => [...prev, { role: 'bot', content: reply }]);
 
       if (autoSpeak) {
         setSpeaking(true);
-        speak(reply, () => setSpeaking(false));
+        const audio = await speakWithElevenLabs(reply, () => setSpeaking(false));
+        currentAudioRef.current = audio;
       }
     } catch {
-      setMessages((prev) => [...prev, { role: 'bot', content: 'Parth… connection lost. Try again.' }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: 'bot', content: 'Parth… connection lost. Try again.' },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -53,6 +112,12 @@ export default function VoiceChatPage() {
   };
 
   const handleStopSpeak = () => {
+    // Stop ElevenLabs audio
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current = null;
+    }
+    // Also stop browser fallback if used
     stopSpeaking();
     setSpeaking(false);
   };
@@ -61,10 +126,17 @@ export default function VoiceChatPage() {
     <div className="flex flex-col h-screen bg-[#0D0D0D] lg:pl-72 page-enter">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-white/5 flex-shrink-0">
-        <button onClick={() => setIsOpen(true)} className="lg:hidden w-8 h-8 flex items-center justify-center text-[#666] hover:text-white">
-          <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 5h12M3 9h12M3 13h8" strokeLinecap="round" /></svg>
+        <button
+          onClick={() => setIsOpen(true)}
+          className="lg:hidden w-8 h-8 flex items-center justify-center text-[#666] hover:text-white"
+        >
+          <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M3 5h12M3 9h12M3 13h8" strokeLinecap="round" />
+          </svg>
         </button>
-        <span className="text-[#FFD700]/80 text-sm" style={{ fontFamily: 'Cormorant Garamond, serif' }}>Voice with Krishna</span>
+        <span className="text-[#FFD700]/80 text-sm" style={{ fontFamily: 'Cormorant Garamond, serif' }}>
+          Voice with Krishna
+        </span>
         <div className="ml-auto flex items-center gap-2">
           <span className="text-[#444] text-xs">Auto-speak</span>
           <button
@@ -80,6 +152,13 @@ export default function VoiceChatPage() {
       {!supported && (
         <div className="mx-4 mt-4 bg-[#FF7A00]/10 border border-[#FF7A00]/25 rounded-xl px-4 py-3 text-[#FF7A00] text-sm">
           Your browser does not support voice input. Please use Chrome or Edge for this feature.
+        </div>
+      )}
+
+      {/* ElevenLabs key missing warning */}
+      {!ELEVENLABS_API_KEY && (
+        <div className="mx-4 mt-4 bg-yellow-500/10 border border-yellow-500/25 rounded-xl px-4 py-3 text-yellow-400 text-sm">
+          ElevenLabs API key not set. Add VITE_ELEVENLABS_API_KEY to your environment variables.
         </div>
       )}
 
@@ -125,10 +204,16 @@ export default function VoiceChatPage() {
 
       {/* Voice controls */}
       <div className="px-4 pb-8 pt-4 flex flex-col items-center gap-4 flex-shrink-0">
-        {/* Live transcript */}
         {isListening && transcript && (
           <div className="text-[#aaa] text-sm italic bg-[#141414] rounded-xl px-4 py-2 border border-white/5 max-w-sm text-center">
             "{transcript}"
+          </div>
+        )}
+
+        {speaking && (
+          <div className="flex items-center gap-2 text-[#0F5C4D] text-xs">
+            <ChakraLoader size="sm" />
+            <span>Krishna is speaking…</span>
           </div>
         )}
 
@@ -136,7 +221,7 @@ export default function VoiceChatPage() {
           {/* Mic button */}
           <button
             onClick={handleMicClick}
-            disabled={!supported || loading}
+            disabled={!supported || loading || speaking}
             className={`
               w-16 h-16 rounded-full flex items-center justify-center text-2xl
               transition-all duration-300 shadow-lg disabled:opacity-40
@@ -145,7 +230,6 @@ export default function VoiceChatPage() {
                 : 'bg-[#141414] border border-white/10 hover:border-white/20 hover:scale-105'
               }
             `}
-            style={{ willChange: 'transform' }}
           >
             {isListening ? '🔴' : '🎙️'}
           </button>
@@ -162,7 +246,7 @@ export default function VoiceChatPage() {
         </div>
 
         <p className="text-[#333] text-xs">
-          {isListening ? 'Listening… tap to stop' : 'Tap to speak'}
+          {isListening ? 'Listening… tap to stop' : speaking ? 'Krishna is speaking…' : 'Tap to speak'}
         </p>
       </div>
     </div>
