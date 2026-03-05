@@ -4,8 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import FloatingWords from '../components/FloatingWords'
 import TypewriterLines from '../components/TypewriterLines'
-import { SudarshanaChakra } from '../components/Icons'
-
+import { Chakra as SudarshanaChakra } from '../components/Icons';
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
   visible: (delay = 0) => ({
