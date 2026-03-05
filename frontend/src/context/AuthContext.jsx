@@ -3,7 +3,6 @@ import axios from 'axios'
 
 const AuthContext = createContext(null)
 
-// ✅ This fixes everything - points to Render backend
 const API_URL = import.meta.env.VITE_API_URL || 'https://madhav-ai-g4q8.onrender.com/api'
 axios.defaults.baseURL = API_URL
 
@@ -26,8 +25,10 @@ export function AuthProvider({ children }) {
       const res = await axios.get('/auth/profile')
       setUser(res.data.user)
     } catch {
+      // Token invalid or expired — clear everything
       localStorage.removeItem('madhav_token')
       setToken(null)
+      setUser(null)
       delete axios.defaults.headers.common['Authorization']
     } finally {
       setLoading(false)
@@ -59,6 +60,8 @@ export function AuthProvider({ children }) {
     delete axios.defaults.headers.common['Authorization']
     setToken(null)
     setUser(null)
+    // Force redirect to login page
+    window.location.href = '/login'
   }
 
   const continueAsGuest = () => {
