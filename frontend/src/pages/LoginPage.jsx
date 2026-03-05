@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import FloatingWords from '../components/FloatingWords'
 import TypewriterLines from '../components/TypewriterLines'
-import { Chakra as SudarshanaChakra} from '../components/Icons';
+import { Chakra as SudarshanaChakra } from '../components/Icons';
+
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
   visible: (delay = 0) => ({
@@ -41,7 +42,7 @@ function SignupForm({ onSuccess, onBack }) {
       <button type="submit" disabled={loading}
         className="w-full py-3 rounded-xl text-sm text-white font-medium flex items-center justify-center gap-2 transition-all"
         style={{ background: 'linear-gradient(135deg, #0F5C4D, #1A7A68)', boxShadow: '0 4px 24px rgba(15,92,77,0.4)' }}>
-        {loading ? <SudarshanaChakra size={20} /> : 'Create Account →'}
+        {loading ? <SudarshanaChakra className="w-5 h-5 animate-spin" /> : 'Create Account →'}
       </button>
       <button type="button" onClick={onBack}
         className="w-full text-white/40 text-xs hover:text-white/70 transition-colors py-1">
@@ -76,7 +77,7 @@ function SigninForm({ onSuccess, onBack }) {
       <button type="submit" disabled={loading}
         className="w-full py-3 rounded-xl text-sm text-white font-medium flex items-center justify-center gap-2 transition-all"
         style={{ background: 'linear-gradient(135deg, #FF7A00, #CC6200)', boxShadow: '0 4px 24px rgba(255,122,0,0.3)' }}>
-        {loading ? <SudarshanaChakra size={20} /> : 'Sign In →'}
+        {loading ? <SudarshanaChakra className="w-5 h-5 animate-spin" /> : 'Sign In →'}
       </button>
       <button type="button" onClick={onBack}
         className="w-full text-white/40 text-xs hover:text-white/70 transition-colors py-1">
@@ -90,7 +91,9 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const { continueAsGuest } = useAuth()
   const [panel, setPanel] = useState('main')
-  const goToChat = () => navigate('/chat')
+
+  // Fixed: was '/chat' which doesn't exist, correct route is '/'
+  const goToChat = () => navigate('/')
   const handleGuest = () => { continueAsGuest(); goToChat() }
 
   return (
@@ -197,4 +200,3 @@ export default function LoginPage() {
     </div>
   )
 }
-
