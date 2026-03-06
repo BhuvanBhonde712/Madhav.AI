@@ -11,9 +11,9 @@ exports.getStoryChapter = async (req, res) => {
     const isStart = chapter === 0;
     const historyText = history.join('\n\n---\n\n');
 
-    const langInstruction = language.includes('हिंदी')
-      ? 'IMPORTANT: You MUST write the ENTIRE story and ALL choices in Hindi (Devanagari script) only. Do NOT use any English words at all.'
-      : 'IMPORTANT: You MUST write the ENTIRE story and ALL choices in English only.';
+    const langInstruction = language === 'hi'
+  ? 'IMPORTANT: You MUST write the ENTIRE story and ALL choices in Hindi (Devanagari script) only. Do NOT use any English words at all.'
+  : 'IMPORTANT: You MUST write the ENTIRE story and ALL choices in English only.';
 
     const prompt = isStart
       ? `You are a master storyteller narrating tales from the Mahabharata and Ramayana.
@@ -60,3 +60,4 @@ Respond ONLY in this exact JSON format with no markdown, no backticks, no extra 
     res.status(500).json({ error: 'Story generation failed' });
   }
 };
+
