@@ -18,14 +18,14 @@ const LANGUAGES = [
     label: 'English',
     sublabel: 'Story in English',
     icon: '🇬🇧',
-    prompt: 'Tell the story in English.',
+    prompt: 'en',   // ← just send 'en'
   },
   {
     code: 'hi',
     label: 'हिंदी',
     sublabel: 'कहानी हिंदी में',
     icon: '🇮🇳',
-    prompt: 'कहानी हिंदी में सुनाओ।',
+    prompt: 'hi',   // ← just send 'hi'
   },
 ];
 
@@ -247,3 +247,4 @@ export default function StoryModePage() {
     </div>
   );
 }
+
