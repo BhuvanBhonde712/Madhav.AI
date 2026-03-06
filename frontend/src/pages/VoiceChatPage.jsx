@@ -4,15 +4,22 @@ import { useSidebar } from '../context/SidebarContext';
 import { useVoice, stopSpeaking } from '../hooks/usevoice';
 import { sendMessage } from '../utils/chatApi';
 
-const ELEVENLABS_VOICE_ID = 'pFwdFf8X8ljNPC5RSnfi'; // Ankur
+const ELEVENLABS_VOICE_ID = 'pFwdFf8X8ljNPC5RSnfi';
 const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY;
 
-// Unlock audio context on first user tap (fixes mobile autoplay block)
-let audioContextUnlocked = false;
+// Create ONE shared AudioContext — never recreate it
+let sharedAudioCtx = null;
+function getAudioContext() {
+  if (!sharedAudioCtx) {
+    sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  return sharedAudioCtx;
+}
+
+// Call this on every user tap to keep context alive
 function unlockAudio() {
-  if (audioContextUnlocked) return;
-  const ctx = new (window.AudioContext || window.webkitAudioContext)();
-  ctx.resume().then(() => { audioContextUnlocked = true; });
+  const ctx = getAudioContext();
+  if (ctx.state === 'suspended') ctx.resume();
 }
 
 async function speakWithElevenLabs(text, onEnd) {
@@ -40,27 +47,24 @@ async function speakWithElevenLabs(text, onEnd) {
       }
     );
 
-    if (!response.ok) throw new Error('ElevenLabs API error');
+    if (!response.ok) throw new Error('ElevenLabs API error ' + response.status);
 
     const audioBlob = await response.blob();
-    const audioUrl = URL.createObjectURL(audioBlob);
+    const arrayBuffer = await audioBlob.arrayBuffer();
 
-    // Use AudioContext to play — works on mobile
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // Reuse shared context — resume if suspended
+    const audioCtx = getAudioContext();
     await audioCtx.resume();
 
-    const arrayBuffer = await audioBlob.arrayBuffer();
     const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
     const source = audioCtx.createBufferSource();
     source.buffer = audioBuffer;
     source.connect(audioCtx.destination);
-    source.onended = () => {
-      URL.revokeObjectURL(audioUrl);
-      onEnd && onEnd();
-    };
+    source.onended = () => { onEnd && onEnd(); };
     source.start(0);
 
     return { stop: () => { try { source.stop(); } catch(e) {} } };
+
   } catch (err) {
     console.error('ElevenLabs error, falling back to browser voice:', err);
     window.speechSynthesis.cancel();
@@ -125,7 +129,7 @@ export default function VoiceChatPage() {
   };
 
   const handleMicClick = () => {
-    unlockAudio(); // unlock audio on every tap — critical for mobile
+    unlockAudio(); // keep AudioContext alive on every tap
     if (isListening) stopListening();
     else startListening();
   };
@@ -259,8 +263,3 @@ export default function VoiceChatPage() {
     </div>
   );
 }
-
-
-
-
-
