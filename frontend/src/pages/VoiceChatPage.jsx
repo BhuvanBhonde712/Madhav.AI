@@ -4,58 +4,44 @@ import { useSidebar } from '../context/SidebarContext';
 import { useVoice, stopSpeaking } from '../hooks/usevoice';
 import { sendMessage } from '../utils/chatApi';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://madhav-ai-g4q8.onrender.com/api';
+// Speak using best available browser voice
+function speakText(text, onEnd) {
+  if (!window.speechSynthesis) { onEnd?.(); return; }
+  window.speechSynthesis.cancel();
 
-// Create ONE shared AudioContext
-let sharedAudioCtx = null;
-function getAudioContext() {
-  if (!sharedAudioCtx) {
-    sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  return sharedAudioCtx;
-}
+  const utterance = new SpeechSynthesisUtterance(text);
 
-function unlockAudio() {
-  const ctx = getAudioContext();
-  if (ctx.state === 'suspended') ctx.resume();
-}
+  const trySpeak = () => {
+    const voices = window.speechSynthesis.getVoices();
 
-async function speakWithBackend(text, onEnd) {
-  try {
-    const response = await fetch(`${API_URL}/voice/speak`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
-    });
+    // Priority list — find best deep male voice available
+    const preferred = [
+      voices.find(v => v.name.includes('Google UK English Male')),
+      voices.find(v => v.name.includes('Microsoft David')),
+      voices.find(v => v.name.includes('Microsoft Ravi')),
+      voices.find(v => v.name.includes('Ravi')),
+      voices.find(v => v.name.toLowerCase().includes('male') && v.lang.startsWith('en')),
+      voices.find(v => v.lang === 'en-IN'),
+      voices.find(v => v.lang.startsWith('en')),
+    ].find(Boolean);
 
-    if (!response.ok) throw new Error('Backend voice API failed');
+    if (preferred) utterance.voice = preferred;
 
-    const audioBlob = await response.blob();
-    const arrayBuffer = await audioBlob.arrayBuffer();
-
-    const audioCtx = getAudioContext();
-    await audioCtx.resume();
-
-    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-    const source = audioCtx.createBufferSource();
-    source.buffer = audioBuffer;
-    source.connect(audioCtx.destination);
-    source.onended = () => { onEnd && onEnd(); };
-    source.start(0);
-
-    return { stop: () => { try { source.stop(); } catch(e) {} } };
-
-  } catch (err) {
-    console.error('Voice error, falling back:', err);
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.85;
-    utterance.pitch = 0.9;
+    utterance.rate = 0.82;   // slow and deliberate
+    utterance.pitch = 0.75;  // deep
     utterance.volume = 1;
     utterance.onend = onEnd;
     window.speechSynthesis.speak(utterance);
-    return null;
+  };
+
+  // Voices may not be loaded yet on mobile
+  if (window.speechSynthesis.getVoices().length === 0) {
+    window.speechSynthesis.onvoiceschanged = trySpeak;
+  } else {
+    trySpeak();
   }
+
+  return { stop: () => window.speechSynthesis.cancel() };
 }
 
 export default function VoiceChatPage() {
@@ -70,6 +56,11 @@ export default function VoiceChatPage() {
   const { isListening, transcript, supported, startListening, stopListening } = useVoice({
     onResult: handleVoiceResult,
   });
+
+  useEffect(() => {
+    // Preload voices on mount
+    window.speechSynthesis?.getVoices();
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -95,7 +86,7 @@ export default function VoiceChatPage() {
 
       if (autoSpeak) {
         setSpeaking(true);
-        const audio = await speakWithBackend(reply, () => setSpeaking(false));
+        const audio = speakText(reply, () => setSpeaking(false));
         currentAudioRef.current = audio;
       }
     } catch {
@@ -109,14 +100,12 @@ export default function VoiceChatPage() {
   };
 
   const handleMicClick = () => {
-    unlockAudio();
     if (isListening) stopListening();
     else startListening();
   };
 
   const handleStopSpeak = () => {
     if (currentAudioRef.current?.stop) currentAudioRef.current.stop();
-    stopSpeaking();
     window.speechSynthesis.cancel();
     setSpeaking(false);
   };
