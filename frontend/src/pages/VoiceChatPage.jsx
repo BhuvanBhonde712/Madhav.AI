@@ -4,7 +4,7 @@ import { useSidebar } from '../context/SidebarContext';
 import { useVoice, stopSpeaking } from '../hooks/usevoice';
 import { sendMessage } from '../utils/chatApi';
 
-const ELEVENLABS_VOICE_ID = 'pFwdFf8X8ljNPC5RSnfi';
+const ELEVENLABS_VOICE_ID = '1U02n4nD6AdIZ9CjF053';
 const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY;
 
 // Create ONE shared AudioContext — never recreate it
@@ -263,3 +263,4 @@ export default function VoiceChatPage() {
     </div>
   );
 }
+
