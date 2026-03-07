@@ -4,10 +4,9 @@ import { useSidebar } from '../context/SidebarContext';
 import { useVoice, stopSpeaking } from '../hooks/usevoice';
 import { sendMessage } from '../utils/chatApi';
 
-const ELEVENLABS_VOICE_ID = 'TX3LPaxmHKxFdv7VOQHJ'; // Liam — deep calm male
-const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY;
+const API_URL = import.meta.env.VITE_API_URL || 'https://madhav-ai-g4q8.onrender.com/api';
 
-// Create ONE shared AudioContext — never recreate it
+// Create ONE shared AudioContext
 let sharedAudioCtx = null;
 function getAudioContext() {
   if (!sharedAudioCtx) {
@@ -16,41 +15,24 @@ function getAudioContext() {
   return sharedAudioCtx;
 }
 
-// Call this on every user tap to keep context alive
 function unlockAudio() {
   const ctx = getAudioContext();
   if (ctx.state === 'suspended') ctx.resume();
 }
 
-async function speakWithElevenLabs(text, onEnd) {
+async function speakWithBackend(text, onEnd) {
   try {
-    if (!ELEVENLABS_API_KEY) throw new Error('No API key');
+    const response = await fetch(`${API_URL}/voice/speak`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    });
 
-    const response = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}`,
-      {
-        method: 'POST',
-        headers: {
-          'xi-api-key': ELEVENLABS_API_KEY,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          text,
-          model_id: 'eleven_monolingual_v1',
-          voice_settings: {
-            stability: 0.75,
-            similarity_boost: 0.85,
-          },
-        }),
-      }
-    );
-
-    if (!response.ok) throw new Error('ElevenLabs API error ' + response.status);
+    if (!response.ok) throw new Error('Backend voice API failed');
 
     const audioBlob = await response.blob();
     const arrayBuffer = await audioBlob.arrayBuffer();
 
-    // Reuse shared context — resume if suspended
     const audioCtx = getAudioContext();
     await audioCtx.resume();
 
@@ -64,7 +46,7 @@ async function speakWithElevenLabs(text, onEnd) {
     return { stop: () => { try { source.stop(); } catch(e) {} } };
 
   } catch (err) {
-    console.error('ElevenLabs error, falling back to browser voice:', err);
+    console.error('Voice error, falling back:', err);
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 0.85;
@@ -113,7 +95,7 @@ export default function VoiceChatPage() {
 
       if (autoSpeak) {
         setSpeaking(true);
-        const audio = await speakWithElevenLabs(reply, () => setSpeaking(false));
+        const audio = await speakWithBackend(reply, () => setSpeaking(false));
         currentAudioRef.current = audio;
       }
     } catch {
@@ -127,7 +109,7 @@ export default function VoiceChatPage() {
   };
 
   const handleMicClick = () => {
-    unlockAudio(); // keep AudioContext alive on every tap
+    unlockAudio();
     if (isListening) stopListening();
     else startListening();
   };
@@ -165,15 +147,9 @@ export default function VoiceChatPage() {
         </div>
       </div>
 
-      {/* Warnings */}
       {!supported && (
         <div className="mx-4 mt-4 bg-[#FF7A00]/10 border border-[#FF7A00]/25 rounded-xl px-4 py-3 text-[#FF7A00] text-sm">
           Your browser does not support voice input. Please use Chrome or Edge.
-        </div>
-      )}
-      {!ELEVENLABS_API_KEY && (
-        <div className="mx-4 mt-4 bg-yellow-500/10 border border-yellow-500/25 rounded-xl px-4 py-3 text-yellow-400 text-xs">
-          ElevenLabs API key not set — using browser fallback voice.
         </div>
       )}
 
@@ -261,7 +237,3 @@ export default function VoiceChatPage() {
     </div>
   );
 }
-
-
-
-
