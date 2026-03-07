@@ -36,7 +36,7 @@ async function speakWithElevenLabs(text, onEnd) {
         },
         body: JSON.stringify({
           text,
-          model_id: 'eleven_multilingual_v2',
+          model_id: 'eleven_turbo_v2.5',
           voice_settings: {
             stability: 0.75,
             similarity_boost: 0.85,
@@ -263,4 +263,5 @@ export default function VoiceChatPage() {
     </div>
   );
 }
+
 
