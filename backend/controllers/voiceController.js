@@ -3,7 +3,7 @@ exports.speakText = async (req, res) => {
     const { text } = req.body;
     if (!text) return res.status(400).json({ error: 'Text is required' });
 
-    const VOICE_ID = 'TX3LPaxmHKxFdv7VOQHJ';
+    const VOICE_ID = 'nPczCjzI2devNBz1zQrb';
     const API_KEY = process.env.ELEVENLABS_API_KEY;
 
     if (!API_KEY) return res.status(500).json({ error: 'ElevenLabs key not set' });
@@ -18,7 +18,7 @@ exports.speakText = async (req, res) => {
         },
         body: JSON.stringify({
           text,
-          model_id: 'eleven_monolingual_v1',
+          model_id: 'eleven_multilingual_v2',
           voice_settings: {
             stability: 0.75,
             similarity_boost: 0.85,
