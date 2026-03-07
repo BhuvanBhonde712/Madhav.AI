@@ -1,9 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-
 const connectDB = require('./config/db');
-
 const authRoutes  = require('./routes/auth');
 const chatRoutes  = require('./routes/chat');
 const verseRoutes = require('./routes/verse');
@@ -15,15 +13,27 @@ const app = express();
 // Connect DB
 connectDB();
 
-// Middleware
+// CORS — allow main domain, all Vercel preview URLs, and localhost
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: function (origin, callback) {
+    if (
+      !origin ||
+      origin === 'https://madhav-ai.vercel.app' ||
+      origin.endsWith('.vercel.app') ||
+      origin.startsWith('http://localhost')
+    ) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
+
 app.use(express.json());
 
 // Health check
-app.get('/', (req, res) => res.json({ status: 'Madhav AI is running 🕉️' }));
+app.get('/', (req, res) => res.json({ status: 'Madhav AI is running' }));
 
 // Routes
 app.use('/api/auth',  authRoutes);
