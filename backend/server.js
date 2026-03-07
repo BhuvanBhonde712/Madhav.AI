@@ -7,6 +7,7 @@ const chatRoutes  = require('./routes/chat');
 const verseRoutes = require('./routes/verse');
 const karmaRoutes = require('./routes/karma');
 const storyRoutes = require('./routes/story');
+const voiceRoutes = require('./routes/voice');
 
 const app = express();
 
@@ -41,9 +42,11 @@ app.use('/api/chat',  chatRoutes);
 app.use('/api/verse', verseRoutes);
 app.use('/api/karma', karmaRoutes);
 app.use('/api/story', storyRoutes);
+app.use('/api/voice', voiceRoutes);
 
 // 404
 app.use((req, res) => res.status(404).json({ error: 'Route not found' }));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
