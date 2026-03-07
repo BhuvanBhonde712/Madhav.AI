@@ -4,7 +4,7 @@ import { useSidebar } from '../context/SidebarContext';
 import { useVoice, stopSpeaking } from '../hooks/usevoice';
 import { sendMessage } from '../utils/chatApi';
 
-const ELEVENLABS_VOICE_ID = 'pFwdFf8X8ljNPC5RSnfi';
+const ELEVENLABS_VOICE_ID = 'TX3LPaxmHKxFdv7VOQHJ'; // Liam — deep calm male
 const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY;
 
 // Create ONE shared AudioContext — never recreate it
@@ -36,7 +36,7 @@ async function speakWithElevenLabs(text, onEnd) {
         },
         body: JSON.stringify({
           text,
-          model_id: 'eleven_turbo_v2.5',
+          model_id: 'eleven_monolingual_v1',
           voice_settings: {
             stability: 0.75,
             similarity_boost: 0.85,
@@ -261,6 +261,7 @@ export default function VoiceChatPage() {
     </div>
   );
 }
+
 
 
 
